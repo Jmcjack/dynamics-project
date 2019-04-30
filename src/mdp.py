@@ -26,6 +26,7 @@ class FrequencyChooserMDP:
         self.real_system = blackbox_sys
         self.system_model = SystemModel(2)
 
+
     def take_action(self, action):
 
         frequency = action[0]
@@ -74,7 +75,7 @@ class FrequencyChooserMDP:
             ku = params[3]
             kt = params[4]
 
-            system_model.M = np.array([[m, -m * e], [-m * e, Ig]])
+            system_model.M = np.array([[m, -m * e], [-m * e, m*e**2 + Ig]])
             system_model.K = np.array([[ku, 0], [0, kt]])
 
             trajectory_sim = system_model.simulate_trajectory(action[0])
@@ -123,11 +124,13 @@ class SystemModel(object):
         # self.C = np.random.random_integers(0, 100, (dims, dims))
         self.K = np.eye(dims)
 
+        self.noisydata = False #change to turn on/off noise in trajectories
+
     def update_model(self, params):
 
         # print('Old M and K:{} {}'.format(self.M, self.K))
         self.params = params
-        self.M = np.array([[params[0], -params[0]*params[2]], [-params[0]*params[2], params[1]]])
+        self.M = np.array([[params[0], -params[0]*params[2]], [-params[0]*params[2],params[0]*params[2]**2 + params[1]]])
         self.K = np.array([[params[3], 0], [0, params[4]]])
         # print('New M and K:{} {}'.format(self.M, self.K))
 
@@ -157,6 +160,35 @@ class SystemModel(object):
 
         trajectory = np.vstack((u, theta))
 
+        if self.noisydata == True:
+            trajectory = self.inject_noise(trajectory)
+
+        return trajectory
+
+    def inject_noise(self, sim_traj):
+
+        u_traj = sim_traj[0]
+        theta_traj = sim_traj[1]
+
+        up = max(sim_traj[0])
+        um = min(sim_traj[0])
+
+        tp = max(sim_traj[1])
+        tm = min(sim_traj[1])
+
+        #create noise vector for u:
+        sig_u = (up - um) / 2
+        u_noise = np.random.normal(scale = sig_u, size = u_traj.shape)
+
+        #create noise vector for theta:
+        sig_theta = (tp - tm) / 2
+        theta_noise = np.random.normal(scale = sig_theta, size = theta_traj.shape)
+
+        u = u_traj + u_noise
+        theta = theta_traj + theta_noise
+
+        trajectory = np.vstack((u, theta))
+
         return trajectory
 
 
@@ -170,10 +202,13 @@ def real_system(frequency):
     kt = 10.
 
     system_model = SystemModel(2)
-    system_model.M = np.array([[m, -m*e], [-m*e, Ig]])
+    system_model.noisydata = True
+    system_model.M = np.array([[m, -m*e], [-m*e, m*e**2 + Ig]])
     system_model.K = np.array([[ku, 0], [0, kt]])
 
     trajectory = system_model.simulate_trajectory(frequency)
+
+
 
     return trajectory
 
