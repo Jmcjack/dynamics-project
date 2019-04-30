@@ -70,7 +70,7 @@ class FrequencyChooserMDP:
 
             m = params[0]
             Ig = params[1]
-            e = 0.5
+            e = 0.5                 #Assume we know e
             ku = params[3]
             kt = params[4]
 
@@ -92,7 +92,7 @@ class FrequencyChooserMDP:
 
             m = 5*np.random.rand(1)[0]
             Ig = 20*np.random.rand(1)[0]
-            e = 0.5
+            e = 0.5                         #Assume we know e
             ku = 20*np.random.rand(1)[0]
             kt = 20*np.random.rand(1)[0]
 
