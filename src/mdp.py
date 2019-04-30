@@ -190,6 +190,34 @@ class SystemModel(object):
         return trajectory
 
 
+class SimplePolicy(object):
+
+    def __init__(self):
+
+        self.chooser = 1
+        self.first_action = True
+
+    def next_action(self, mdp):
+
+        if self.first_action:
+            self.first_action = False
+            return (0.3, )
+
+        K = mdp.system_model.K
+        M = mdp.system_model.M
+
+        evs, ems = eigh(M, K, eigvals_only=False)
+
+        action = (np.sqrt(evs[self.chooser]+0.1),)
+
+        self.chooser += 1
+
+        if self.chooser > 1:
+            self.chooser = 0
+
+        return action
+
+
 def real_system(frequency):
 
     #Blackbox real system with real parameters
@@ -200,7 +228,7 @@ def real_system(frequency):
     kt = 10.
 
     system_model = SystemModel(2)
-    system_model.noisydata = True
+    system_model.noisydata = False
     system_model.M = np.array([[m, -m*e], [-m*e, m*e**2 + Ig]])
     system_model.K = np.array([[ku, 0], [0, kt]])
 
@@ -214,9 +242,13 @@ if __name__ == '__main__':
     np.random.seed(11)
 
     mdp = FrequencyChooserMDP(real_system)
-    actions = [(0.3,), (3.,), (30.,), (5.,), (0.4,)]
+    policy = SimplePolicy()
 
-    for action in actions:
+    num_actions = 10
+
+    for i in range(num_actions):
+        action = policy.next_action(mdp)
+        print('Action: {}'.format(action))
         reward = mdp.take_action(action)
 
     fig = plt.figure()
