@@ -70,7 +70,7 @@ class FrequencyChooserMDP:
 
             m = params[0]
             Ig = params[1]
-            e = params[2]
+            e = 0.5
             ku = params[3]
             kt = params[4]
 
@@ -92,7 +92,7 @@ class FrequencyChooserMDP:
 
             m = 5*np.random.rand(1)[0]
             Ig = 20*np.random.rand(1)[0]
-            e = 1*np.random.rand(1)[0]
+            e = 0.5
             ku = 20*np.random.rand(1)[0]
             kt = 20*np.random.rand(1)[0]
 
@@ -133,7 +133,9 @@ class SystemModel(object):
 
     def simulate_trajectory(self, forced_frequency):
 
-        t = np.linspace(0., 10., 100)
+        #Spectral Expansion Technique to simulate forced trajectories
+
+        t = np.linspace(0., 10., 100) #simulate for 10 seconds
         evs, ems = eigh(self.M, self.K, eigvals_only=False)
 
         em1 = ems[:, 0]
@@ -159,6 +161,7 @@ class SystemModel(object):
 
 
 def real_system(frequency):
+    #Blackbox real system with real parameters
 
     m = 1.
     Ig = 10.
@@ -179,8 +182,8 @@ if __name__ == '__main__':
 
     np.random.seed(11)
 
-    thing = FrequencyChooserMDP(real_system)
+    mdp = FrequencyChooserMDP(real_system)
     actions = [(0.3,), (3.,), (30.,), (5.,), (0.4,)]
 
     for action in actions:
-        reward = thing.take_action(action)
+        reward = mdp.take_action(action)
