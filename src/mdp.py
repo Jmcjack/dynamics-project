@@ -7,7 +7,7 @@ import numpy as np
 
 import matplotlib
 matplotlib.use('TkAgg')
-
+import matplotlib.pyplot as plt
 
 from scipy.linalg import eigh
 
@@ -26,7 +26,6 @@ class FrequencyChooserMDP:
         self.real_system = blackbox_sys
         self.system_model = SystemModel(2)
 
-
     def take_action(self, action):
 
         frequency = action[0]
@@ -36,8 +35,8 @@ class FrequencyChooserMDP:
         trajectory_real = self.excite_real_system(frequency)
         # Calculate the reward!
 
-        errors = trajectory_real - trajectory_simulated
-        x_new = np.mean(np.abs(errors))
+        errors = np.power(trajectory_real - trajectory_simulated, 2)
+        x_new = np.mean(np.sqrt(errors))
 
         reward = self.calculate_reward(errors, action)
         self.state_history.append(np.copy(x_new))
@@ -55,10 +54,10 @@ class FrequencyChooserMDP:
 
     def calculate_reward(self, errors, action):
 
-        sim_reward = 1./np.mean(np.abs(errors))
+        sim_reward = np.log10(1./np.mean(np.abs(errors)))
 
         # Control action costs
-        control_cost = -action[0]
+        control_cost = -np.power(action[0], 1)
         total_reward = sim_reward + control_cost
 
         return total_reward
@@ -137,7 +136,6 @@ class SystemModel(object):
     def simulate_trajectory(self, forced_frequency):
 
         #Spectral Expansion Technique to simulate forced trajectories
-
         t = np.linspace(0., 10., 100) #simulate for 10 seconds
         evs, ems = eigh(self.M, self.K, eigvals_only=False)
 
@@ -193,8 +191,8 @@ class SystemModel(object):
 
 
 def real_system(frequency):
-    #Blackbox real system with real parameters
 
+    #Blackbox real system with real parameters
     m = 1.
     Ig = 10.
     e = 0.5
@@ -208,8 +206,6 @@ def real_system(frequency):
 
     trajectory = system_model.simulate_trajectory(frequency)
 
-
-
     return trajectory
 
 
@@ -222,3 +218,19 @@ if __name__ == '__main__':
 
     for action in actions:
         reward = mdp.take_action(action)
+
+    fig = plt.figure()
+    plt.subplot(2, 1, 1)
+    plt.plot(mdp.state_history, 'k-')
+    plt.ylabel('Best MSE')
+    plt.grid()
+    plt.subplot(2, 1, 2)
+    plt.plot(np.cumsum(mdp.reward_history), 'k-')
+    plt.xlabel('Action Number')
+    plt.ylabel('Cumulative Reward')
+    plt.grid()
+    plt.show()
+
+    plt.tight_layout()
+
+    plt.savefig('update.png')
