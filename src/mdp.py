@@ -201,14 +201,17 @@ class SimplePolicy(object):
 
         if self.first_action:
             self.first_action = False
-            return (0.3, )
+            return (0.3, ) #for the first action, excite the same every time.
 
         K = mdp.system_model.K
         M = mdp.system_model.M
 
         evs, ems = eigh(M, K, eigvals_only=False)
 
-        action = (np.sqrt(evs[self.chooser]+0.1),)
+        '''Current Policy: excite the system at the predicted eigenfrequency
+        with some small random deviation
+        '''
+        action = (np.sqrt(evs[self.chooser]+np.random.uniform(-0.1,0.1)),)
 
         self.chooser += 1
 
@@ -261,8 +264,10 @@ if __name__ == '__main__':
     plt.xlabel('Action Number')
     plt.ylabel('Cumulative Reward')
     plt.grid()
-    plt.show()
+    plt.show(block = False)
 
     plt.tight_layout()
+
+    input('Press Enter to continue...')
 
     plt.savefig('update.png')
