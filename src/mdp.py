@@ -103,6 +103,22 @@ class FrequencyChooserMDP:
             if mse < best_mse:
                 best_params = params
 
+        #search local space
+        for i in range(0, params_to_try):
+
+            m = best_params[0] + best_params[0]*0.1*np.random.uniform(-1,1)
+            Ig = best_params[1] + best_params[1]*0.1*np.random.uniform(-1,1)
+            e = 0.5                         #Assume we know e
+            ku = best_params[3] + best_params[3]*0.1*np.random.uniform(-1,1)
+            kt = best_params[4] + best_params[4]*0.1*np.random.uniform(-1,1)
+
+            params = [m, Ig, e, ku, kt]
+
+            mse = test_parameters(params, trajectory_real)
+
+            if mse < best_mse:
+                best_params = params
+
         print('Best MSE: {}'.format(best_mse))
         print('Best parameters: {}'.format(best_params))
         print('True parameters: {}'.format([1, 10, 0.5, 2, 10]))
@@ -264,11 +280,7 @@ if __name__ == '__main__':
     plt.xlabel('Action Number')
     plt.ylabel('Cumulative Reward')
     plt.grid()
-<<<<<<< HEAD
-    plt.show(block = False)
-=======
     plt.show(block=False)
->>>>>>> 16df507c2b009b0b2c51c3a9cf197bdb8b33dcbd
 
     plt.tight_layout()
 
