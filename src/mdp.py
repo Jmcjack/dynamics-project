@@ -83,7 +83,7 @@ class FrequencyChooserMDP:
 
             return mse
 
-        params_to_try = 10000
+        params_to_try = 100
 
         best_params = self.system_model.params
         best_mse = test_parameters(best_params, trajectory_real)
@@ -247,11 +247,11 @@ if __name__ == '__main__':
     mdp = FrequencyChooserMDP(real_system)
     policy = SimplePolicy()
 
-    num_actions = 10
+    num_actions = 20
 
     for i in range(num_actions):
         action = policy.next_action(mdp)
-        print('Action: {}'.format(action))
+        print('{} Action: {}'.format(i, action))
         reward = mdp.take_action(action)
 
     fig = plt.figure()
@@ -264,7 +264,11 @@ if __name__ == '__main__':
     plt.xlabel('Action Number')
     plt.ylabel('Cumulative Reward')
     plt.grid()
+<<<<<<< HEAD
     plt.show(block = False)
+=======
+    plt.show(block=False)
+>>>>>>> 16df507c2b009b0b2c51c3a9cf197bdb8b33dcbd
 
     plt.tight_layout()
 
